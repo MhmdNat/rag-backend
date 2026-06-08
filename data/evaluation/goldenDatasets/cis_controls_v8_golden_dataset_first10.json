@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "document": "CIS Critical Security Controls Version 8",
+    "created": "2026-06-04",
+    "total_questions": 50,
+    "question_types": ["factual", "multi-hop", "negative", "list", "comparison", "definition", "procedural"],
+    "difficulty_levels": ["easy", "medium", "hard"],
+    "evaluation_dimensions": ["faithfulness", "answer_relevance", "context_recall", "context_precision"]
+  },
+  "questions": [
+    {
+      "id": "Q001",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "How many CIS Controls are in Version 8?",
+      "expected_output": "There are 18 CIS Controls in Version 8.",
+      "context": ["Introduction / Structure of the CIS Controls", "Controls index"],
+      "evaluation_notes": "A direct lookup. A good RAG system should retrieve the controls list and count accurately."
+    },
+    {
+      "id": "Q002",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What does IG1 stand for and what type of enterprise does it target?",
+      "expected_output": "IG1 stands for Implementation Group 1. It targets small to medium-sized enterprises with limited IT and cybersecurity expertise. These enterprises have a limited tolerance for downtime and primarily protect employee and financial information.",
+      "context": ["Implementation Groups — IG1"],
+      "evaluation_notes": "Tests direct retrieval of IG definition."
+    },
+    {
+      "id": "Q003",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What is the minimum password length recommended for accounts not using MFA?",
+      "expected_output": "A minimum of 14 characters is recommended for accounts not using MFA. For accounts using MFA, the minimum is 8 characters.",
+      "context": ["Safeguard 5.2 — Use Unique Passwords"],
+      "evaluation_notes": "Numerical detail extraction. Hallucination risk if model relies on general knowledge."
+    },
+    {
+      "id": "Q004",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "After how many days of inactivity should a dormant account be disabled?",
+      "expected_output": "Dormant accounts should be deleted or disabled after 45 days of inactivity.",
+      "context": ["Safeguard 5.3 — Disable Dormant Accounts"],
+      "evaluation_notes": "Specific threshold value. Good test for numeric grounding."
+    },
+    {
+      "id": "Q005",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What is the maximum session inactivity timeout for mobile end-user devices?",
+      "expected_output": "For mobile end-user devices, automatic session locking must be configured to trigger after no more than 2 minutes of inactivity. For general purpose operating systems, the maximum is 15 minutes.",
+      "context": ["Safeguard 4.3 — Configure Automatic Session Locking on Enterprise Assets"],
+      "evaluation_notes": "Two values in one safeguard — tests if model retrieves both."
+    }
+  ]
+}
+   

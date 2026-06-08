@@ -1,0 +1,462 @@
+{
+  "metadata": {
+    "document": "CIS Critical Security Controls Version 8",
+    "created": "2026-06-04",
+    "total_questions": 50,
+    "question_types": ["factual", "multi-hop", "negative", "list", "comparison", "definition", "procedural"],
+    "difficulty_levels": ["easy", "medium", "hard"],
+    "evaluation_dimensions": ["faithfulness", "answer_relevance", "context_recall", "context_precision"]
+  },
+  "questions": [
+    {
+      "id": "Q001",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "How many CIS Controls are in Version 8?",
+      "expected_output": "There are 18 CIS Controls in Version 8.",
+      "context": ["Introduction / Structure of the CIS Controls", "Controls index"],
+      "evaluation_notes": "A direct lookup. A good RAG system should retrieve the controls list and count accurately."
+    },
+    {
+      "id": "Q002",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What does IG1 stand for and what type of enterprise does it target?",
+      "expected_output": "IG1 stands for Implementation Group 1. It targets small to medium-sized enterprises with limited IT and cybersecurity expertise. These enterprises have a limited tolerance for downtime and primarily protect employee and financial information.",
+      "context": ["Implementation Groups — IG1"],
+      "evaluation_notes": "Tests direct retrieval of IG definition."
+    },
+    {
+      "id": "Q003",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What is the minimum password length recommended for accounts not using MFA?",
+      "expected_output": "A minimum of 14 characters is recommended for accounts not using MFA. For accounts using MFA, the minimum is 8 characters.",
+      "context": ["Safeguard 5.2 — Use Unique Passwords"],
+      "evaluation_notes": "Numerical detail extraction. Hallucination risk if model relies on general knowledge."
+    },
+    {
+      "id": "Q004",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "After how many days of inactivity should a dormant account be disabled?",
+      "expected_output": "Dormant accounts should be deleted or disabled after 45 days of inactivity.",
+      "context": ["Safeguard 5.3 — Disable Dormant Accounts"],
+      "evaluation_notes": "Specific threshold value. Good test for numeric grounding."
+    },
+    {
+      "id": "Q005",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What is the maximum session inactivity timeout for mobile end-user devices?",
+      "expected_output": "For mobile end-user devices, automatic session locking must be configured to trigger after no more than 2 minutes of inactivity. For general purpose operating systems, the maximum is 15 minutes.",
+      "context": ["Safeguard 4.3 — Configure Automatic Session Locking on Enterprise Assets"],
+      "evaluation_notes": "Two values in one safeguard — tests if model retrieves both."
+    },
+    {
+      "id": "Q006",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "How frequently should automated backups be performed at a minimum?",
+      "expected_output": "Automated backups should be performed weekly, or more frequently based on the sensitivity of the data.",
+      "context": ["Safeguard 11.2 — Perform Automated Backups"],
+      "evaluation_notes": "Frequency detail extraction."
+    },
+    {
+      "id": "Q007",
+      "type": "factual",
+      "difficulty": "easy",
+      "input": "What is the minimum audit log retention period specified in CIS Controls v8?",
+      "expected_output": "Audit logs must be retained for a minimum of 90 days.",
+      "context": ["Safeguard 8.10 — Retain Audit Logs"],
+      "evaluation_notes": "Direct number lookup."
+    },
+    {
+      "id": "Q008",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What are the five safeguards in Control 1 (Inventory and Control of Enterprise Assets) and which implementation groups do they apply to?",
+      "expected_output": "The five safeguards are: 1.1 Establish and Maintain Detailed Enterprise Asset Inventory (IG1, IG2, IG3); 1.2 Address Unauthorized Assets (IG1, IG2, IG3); 1.3 Utilize an Active Discovery Tool (IG2, IG3); 1.4 Use DHCP Logging to Update Enterprise Asset Inventory (IG2, IG3); 1.5 Use a Passive Asset Discovery Tool (IG3 only).",
+      "context": ["Control 01 Safeguards table"],
+      "evaluation_notes": "Multi-item list retrieval with IG mapping. Tests completeness."
+    },
+    {
+      "id": "Q009",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "Which control covers penetration testing and how many safeguards does it contain?",
+      "expected_output": "Control 18 covers Penetration Testing. It contains 5 safeguards total: 0 for IG1, 3 for IG2, and 5 for IG3.",
+      "context": ["Control 18 — Penetration Testing overview"],
+      "evaluation_notes": "Control identification plus safeguard count."
+    },
+    {
+      "id": "Q010",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What encryption tools are mentioned as example implementations for encrypting data on end-user devices?",
+      "expected_output": "Example implementations include Windows BitLocker, Apple FileVault, and Linux dm-crypt.",
+      "context": ["Safeguard 3.6 — Encrypt Data on End-User Devices"],
+      "evaluation_notes": "Specific product/tool enumeration."
+    },
+    {
+      "id": "Q011",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What does DMARC stand for and which safeguard requires its implementation?",
+      "expected_output": "DMARC stands for Domain-based Message Authentication, Reporting, and Conformance. It is required by Safeguard 9.5, which also requires implementing SPF (Sender Policy Framework) and DKIM (DomainKeys Identified Mail) standards.",
+      "context": ["Safeguard 9.5 — Implement DMARC", "Acronyms section"],
+      "evaluation_notes": "Acronym expansion plus contextual usage. Tests cross-chunk reasoning."
+    },
+    {
+      "id": "Q012",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "How often should vulnerability scans of externally-exposed enterprise assets be performed?",
+      "expected_output": "Automated vulnerability scans of externally-exposed enterprise assets should be performed monthly, or more frequently, using a SCAP-compliant vulnerability scanning tool.",
+      "context": ["Safeguard 7.6 — Perform Automated Vulnerability Scans of Externally-Exposed Enterprise Assets"],
+      "evaluation_notes": "Frequency plus tool qualification detail."
+    },
+    {
+      "id": "Q013",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What failed authentication attempt thresholds are specified for device lockout on laptops versus smartphones?",
+      "expected_output": "For laptops, no more than 20 failed authentication attempts are allowed before lockout. For tablets and smartphones, the limit is no more than 10 failed authentication attempts.",
+      "context": ["Safeguard 4.10 — Enforce Automatic Device Lockout on Portable End-User Devices"],
+      "evaluation_notes": "Two distinct thresholds differentiated by device type."
+    },
+    {
+      "id": "Q014",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What does the Community Defense Model (CDM) use as data sources to identify the most important attack types?",
+      "expected_output": "The CDM uses conclusions from the most recent Verizon Data Breach Investigations Report (DBIR) along with data from the Multi-State Information Sharing and Analysis Center (MS-ISAC) to identify the five most important attack types. It describes attacks using the MITRE ATT&CK Framework.",
+      "context": ["Introduction — Evolution of the CIS Controls"],
+      "evaluation_notes": "Multi-source description from introductory narrative."
+    },
+    {
+      "id": "Q015",
+      "type": "factual",
+      "difficulty": "hard",
+      "input": "Which CIS Controls safeguard requires dedicated computing resources for administrative work and what constraints apply to those resources?",
+      "expected_output": "Safeguard 12.8 requires establishing and maintaining dedicated computing resources for all administrative tasks. These resources must be either physically or logically separated, segmented from the enterprise's primary network, and must not be allowed internet access. This safeguard applies to IG3 only.",
+      "context": ["Safeguard 12.8 — Establish and Maintain Dedicated Computing Resources for All Administrative Work"],
+      "evaluation_notes": "IG-level plus multiple constraints — tests detail completeness."
+    },
+    {
+      "id": "Q016",
+      "type": "definition",
+      "difficulty": "easy",
+      "input": "How does CIS Controls v8 define 'enterprise assets'?",
+      "expected_output": "Enterprise assets are defined as assets with the potential to store or process data. They include end-user devices, network devices, non-computing/Internet of Things (IoT) devices, and servers, in virtual, cloud-based, and physical environments.",
+      "context": ["Glossary — Enterprise assets"],
+      "evaluation_notes": "Glossary term retrieval."
+    },
+    {
+      "id": "Q017",
+      "type": "definition",
+      "difficulty": "easy",
+      "input": "What is social engineering as defined in CIS Controls v8?",
+      "expected_output": "Social engineering refers to a broad range of malicious activities accomplished through human interactions on various platforms such as email or phone. It relies on psychological manipulation to trick users into making security mistakes or giving away sensitive information.",
+      "context": ["Glossary — Social engineering"],
+      "evaluation_notes": "Glossary definition retrieval."
+    },
+    {
+      "id": "Q018",
+      "type": "definition",
+      "difficulty": "medium",
+      "input": "What is the difference between 'penetration testing' and 'vulnerability testing' according to CIS Controls v8?",
+      "expected_output": "Vulnerability testing checks for the presence of known, insecure enterprise assets and stops there — it is exclusively automated scanning with sometimes manual validation of false positives. Penetration testing goes further to exploit those weaknesses to see how far an attacker could get and what business processes or data might be impacted. Penetration testing requires more human involvement and analysis, sometimes with custom tools or scripts, though vulnerability testing is often a starting point for a penetration test.",
+      "context": ["Control 18 — Why is this Control critical?"],
+      "evaluation_notes": "Conceptual distinction requiring comparison across a paragraph."
+    },
+    {
+      "id": "Q019",
+      "type": "definition",
+      "difficulty": "medium",
+      "input": "What is a 'Red Team' exercise as described in CIS Controls v8, and how does it differ from a penetration test?",
+      "expected_output": "A Red Team exercise is similar to a penetration test in that vulnerabilities are exploited. The key difference is focus: Red Teams simulate specific attacker TTPs (Tactics, Techniques, and Procedures) to evaluate how an enterprise's environment would withstand an attack from a specific adversary or category of adversaries, whereas penetration testing more broadly tests the existence and exploitability of vulnerabilities.",
+      "context": ["Control 18 — Procedures and tools"],
+      "evaluation_notes": "Nuanced definitional comparison."
+    },
+    {
+      "id": "Q020",
+      "type": "definition",
+      "difficulty": "hard",
+      "input": "What are 'Safeguards' in CIS Controls v8, and what were they called in previous versions?",
+      "expected_output": "Safeguards are the specific individual actions that enterprises should take to implement a given CIS Control. They were known as 'Sub-Controls' prior to Version 8 of the CIS Controls.",
+      "context": ["Introduction footnote 1", "Structure of the CIS Controls"],
+      "evaluation_notes": "Historical terminology change — likely stored in a footnote, tests fine-grained retrieval."
+    },
+    {
+      "id": "Q021",
+      "type": "list",
+      "difficulty": "medium",
+      "input": "List all CIS Controls v8 safeguards that are required for IG1 under Control 5 (Account Management).",
+      "expected_output": "The IG1 safeguards under Control 5 are: 5.1 Establish and Maintain an Inventory of Accounts; 5.2 Use Unique Passwords; 5.3 Disable Dormant Accounts; 5.4 Restrict Administrator Privileges to Dedicated Administrator Accounts. Safeguards 5.5 and 5.6 are not required for IG1.",
+      "context": ["Control 05 Safeguards table"],
+      "evaluation_notes": "IG-filtered list extraction. Tests precision — must exclude IG2/IG3-only safeguards."
+    },
+    {
+      "id": "Q022",
+      "type": "list",
+      "difficulty": "medium",
+      "input": "Which controls in CIS Controls v8 have zero safeguards applicable to IG1?",
+      "expected_output": "Control 13 (Network Monitoring and Defense) and Control 16 (Application Software Security) have zero safeguards applicable to IG1.",
+      "context": ["Control 13 overview", "Control 16 overview"],
+      "evaluation_notes": "Inverse lookup requiring scanning IG1 counts across all controls."
+    },
+    {
+      "id": "Q023",
+      "type": "list",
+      "difficulty": "medium",
+      "input": "What are the design principles listed for CIS Controls Version 8?",
+      "expected_output": "The design principles for Version 8 are: (1) Offense Informs Defense — controls are selected based on data and knowledge of attacker behavior; (2) Focus — help defenders identify the most critical things to stop the most important attacks; (3) Feasible — all safeguards must be specific and practical to implement; (4) Measurable — all controls especially for IG1 must be measurable; (5) Align — create peaceful co-existence with other governance and regulatory frameworks.",
+      "context": ["Introduction — This Version of the CIS Controls"],
+      "evaluation_notes": "Enumerated list from narrative text."
+    },
+    {
+      "id": "Q024",
+      "type": "list",
+      "difficulty": "hard",
+      "input": "What are all the data protection safeguards (3.x) that apply to IG2 but were NOT required for IG1?",
+      "expected_output": "The Control 3 safeguards that apply to IG2 but not IG1 are: 3.7 Establish and Maintain a Data Classification Scheme; 3.8 Document Data Flows; 3.9 Encrypt Data on Removable Media; 3.10 Encrypt Sensitive Data in Transit; 3.11 Encrypt Sensitive Data at Rest; 3.12 Segment Data Processing and Storage Based on Sensitivity.",
+      "context": ["Control 03 Safeguards table"],
+      "evaluation_notes": "Set-difference logic across IG columns. High hallucination risk."
+    },
+    {
+      "id": "Q025",
+      "type": "list",
+      "difficulty": "hard",
+      "input": "What elements must a software inventory document according to Safeguard 2.1?",
+      "expected_output": "The software inventory must document: title, publisher, initial install/use date, and business purpose for each entry. Where appropriate, it should also include the URL, app store(s), versions, deployment mechanism, and decommission date. The inventory must be reviewed and updated bi-annually or more frequently.",
+      "context": ["Safeguard 2.1 — Establish and Maintain a Software Inventory"],
+      "evaluation_notes": "Required fields enumeration with optionals clearly distinguished."
+    },
+    {
+      "id": "Q026",
+      "type": "comparison",
+      "difficulty": "medium",
+      "input": "How does IG2 differ from IG3 in terms of enterprise characteristics and security requirements?",
+      "expected_output": "IG2 enterprises employ individuals responsible for managing and protecting IT infrastructure, support multiple departments, may have regulatory compliance burdens, store sensitive client data, and can withstand short service interruptions. Their main concern is loss of public confidence from a breach. IG3 enterprises employ specialized security experts across different cybersecurity disciplines, handle assets subject to regulatory oversight, must address availability alongside confidentiality and integrity, and face significant public harm from successful attacks. IG3 safeguards must defend against targeted attacks from sophisticated adversaries and reduce the impact of zero-day attacks — requirements not present in IG2.",
+      "context": ["Implementation Groups — IG2", "Implementation Groups — IG3"],
+      "evaluation_notes": "Side-by-side comparison requiring synthesis from two sections."
+    },
+    {
+      "id": "Q027",
+      "type": "comparison",
+      "difficulty": "medium",
+      "input": "What is the difference between Control 5 (Account Management) and Control 6 (Access Control Management)?",
+      "expected_output": "Control 5 focuses on managing accounts themselves — assigning, tracking, and managing credentials for user, administrator, and service accounts. Control 6 focuses on managing what access those accounts have — ensuring users only have access appropriate for their role, with strong authentication for critical functions. Control 5 deals with the existence and lifecycle of accounts; Control 6 deals with the privileges and access rights those accounts are granted.",
+      "context": ["Control 05 — Why is this Control critical?", "Control 06 — Why is this Control critical?"],
+      "evaluation_notes": "Conceptual boundary distinction between two related controls."
+    },
+    {
+      "id": "Q028",
+      "type": "comparison",
+      "difficulty": "hard",
+      "input": "How does the frequency of internal versus external vulnerability scanning differ, and which implementation groups are required to perform each?",
+      "expected_output": "Internal enterprise asset vulnerability scans (Safeguard 7.5) must be performed quarterly or more frequently and apply to IG2 and IG3. External enterprise asset vulnerability scans (Safeguard 7.6) must be performed monthly or more frequently and also apply to IG2 and IG3. Both require SCAP-compliant tools. External scans are required more frequently than internal scans.",
+      "context": ["Safeguard 7.5", "Safeguard 7.6"],
+      "evaluation_notes": "Multi-field comparison across two safeguards."
+    },
+    {
+      "id": "Q029",
+      "type": "multi-hop",
+      "difficulty": "medium",
+      "input": "If an enterprise is classified as IG2, which Control 6 safeguards do they need to implement?",
+      "expected_output": "IG2 enterprises (which include all IG1 safeguards plus IG2-specific ones) must implement all six safeguards of Control 6: 6.1 Establish an Access Granting Process; 6.2 Establish an Access Revoking Process; 6.3 Require MFA for Externally-Exposed Applications; 6.4 Require MFA for Remote Network Access; 6.5 Require MFA for Administrative Access; 6.6 Establish and Maintain an Inventory of Authentication and Authorization Systems; 6.7 Centralize Access Control. Safeguard 6.8 (Role-Based Access Control) is IG3 only and is not required.",
+      "context": ["Implementation Groups — IG2 includes IG1", "Control 06 Safeguards table"],
+      "evaluation_notes": "Requires understanding that IG2 includes IG1, then applying that to the table."
+    },
+    {
+      "id": "Q030",
+      "type": "multi-hop",
+      "difficulty": "medium",
+      "input": "What framework does CIS use to describe attack patterns in the Community Defense Model, and what is that framework's full name?",
+      "expected_output": "CIS uses the MITRE ATT&CK Framework, whose full name is MITRE Adversarial Tactics, Techniques, and Common Knowledge. It is used to create attack patterns by identifying specific combinations of Tactics and Techniques used in the most important attack types.",
+      "context": ["Introduction — Evolution of the CIS Controls", "Acronyms — MITRE ATT&CK"],
+      "evaluation_notes": "Requires cross-referencing acronym expansion with narrative context."
+    },
+    {
+      "id": "Q031",
+      "type": "multi-hop",
+      "difficulty": "hard",
+      "input": "Which data protection safeguards in Control 3 explicitly deal with encryption, and which implementation group is each one required for?",
+      "expected_output": "The encryption-related safeguards in Control 3 are: 3.6 Encrypt Data on End-User Devices (IG1, IG2, IG3); 3.9 Encrypt Data on Removable Media (IG2, IG3); 3.10 Encrypt Sensitive Data in Transit (IG2, IG3); 3.11 Encrypt Sensitive Data at Rest (IG2, IG3).",
+      "context": ["Control 03 Safeguards table"],
+      "evaluation_notes": "Filtered keyword search across safeguard titles plus IG mapping."
+    },
+    {
+      "id": "Q032",
+      "type": "multi-hop",
+      "difficulty": "hard",
+      "input": "An enterprise wants to implement only the IG1 safeguards for email and web browser protection. What must they do?",
+      "expected_output": "For Control 9 (Email and Web Browser Protections), there are only 2 safeguards applicable to IG1: 9.1 Ensure Use of Only Fully Supported Browsers and Email Clients (use only the latest vendor-provided versions), and 9.2 Use DNS Filtering Services on all enterprise assets to block access to known malicious domains. The remaining five safeguards (9.3 through 9.7) are IG2 or IG3 only.",
+      "context": ["Control 09 Safeguards table", "Control 09 overview"],
+      "evaluation_notes": "IG1-filtered requirements from a specific control."
+    },
+    {
+      "id": "Q033",
+      "type": "multi-hop",
+      "difficulty": "hard",
+      "input": "What resources does CIS recommend for guidance on passwords, and what minimum requirements does it set for password length when MFA is not in use?",
+      "expected_output": "CIS recommends the CIS Password Policy Guide (available at cisecurity.org/white-papers/cis-password-policy-guide/) for guidance on password creation and use. When MFA is not in use, the minimum password length is 14 characters. When MFA is in use, the minimum is 8 characters (per Safeguard 5.2).",
+      "context": ["Control 05 — Procedures and tools", "Safeguard 5.2"],
+      "evaluation_notes": "Cross-section retrieval linking guidance resource to specific requirement."
+    },
+    {
+      "id": "Q034",
+      "type": "procedural",
+      "difficulty": "medium",
+      "input": "What steps does CIS Controls v8 recommend for building a secure baseline image?",
+      "expected_output": "The recommended steps are: (1) Determine the risk classification of data handled on the asset; (2) Create a security configuration script using benchmarks; (3) Install the base operating system software; (4) Apply appropriate OS and security patches; (5) Install appropriate application software, tools, and utilities; (6) Apply updates to the software installed in step 5; (7) Install local customization scripts; (8) Run the security configuration script to set the appropriate security level; (9) Run a SCAP-compliant tool to record/score the baseline image settings; (10) Perform a security quality assurance test; (11) Save the base image in a secure location.",
+      "context": ["Control 04 — Procedures and tools"],
+      "evaluation_notes": "Ordered procedural steps — tests sequencing fidelity."
+    },
+    {
+      "id": "Q035",
+      "type": "procedural",
+      "difficulty": "medium",
+      "input": "What should an enterprise do when a service provider contract ends or is terminated?",
+      "expected_output": "When decommissioning a service provider, the enterprise should: deactivate user and service accounts, terminate data flows, and ensure secure disposal of enterprise data within the service provider's systems. This is covered under Safeguard 15.7.",
+      "context": ["Control 15 — Procedures and tools", "Safeguard 15.7 — Securely Decommission Service Providers"],
+      "evaluation_notes": "Procedural requirement from both narrative and safeguard."
+    },
+    {
+      "id": "Q036",
+      "type": "procedural",
+      "difficulty": "hard",
+      "input": "What does CIS Controls v8 recommend for testing data backups, and how often should this testing occur?",
+      "expected_output": "Once per quarter (or whenever a new backup process or technology is introduced), a testing team should evaluate a random sampling of backups and attempt to restore them on a test bed environment. The restored backups should be verified to ensure the operating system, application, and data are all intact and functional. In the event of malware infection, restoration should use a backup version believed to predate the original infection. This is formalized in Safeguard 11.5, which requires quarterly testing for a sampling of in-scope enterprise assets at IG2 and IG3.",
+      "context": ["Control 11 — Procedures and tools", "Safeguard 11.5"],
+      "evaluation_notes": "Combines narrative guidance with formal safeguard frequency and scope."
+    },
+    {
+      "id": "Q037",
+      "type": "negative",
+      "difficulty": "easy",
+      "input": "Does CIS Controls v8 require MFA for all user accounts regardless of context?",
+      "expected_output": "No. CIS Controls v8 specifically mandates MFA in three scenarios: for externally-exposed applications (Safeguard 6.3), for remote network access (Safeguard 6.4), and for all administrative access accounts (Safeguard 6.5). It does not universally require MFA for all standard user accounts in all contexts.",
+      "context": ["Control 06 Safeguards table", "Control 06 — Procedures and tools"],
+      "evaluation_notes": "Tests false generalization. Model must not over-extend the requirement."
+    },
+    {
+      "id": "Q038",
+      "type": "negative",
+      "difficulty": "medium",
+      "input": "Is Control 13 (Network Monitoring and Defense) required for IG1 enterprises?",
+      "expected_output": "No. Control 13 (Network Monitoring and Defense) has zero safeguards applicable to IG1. All 11 safeguards begin at IG2 (6 safeguards) with the remaining 5 applicable only to IG3.",
+      "context": ["Control 13 overview — SAFEGUARDS TOTAL 11, IG1 0/11"],
+      "evaluation_notes": "Negative lookup — model should not fabricate IG1 requirements."
+    },
+    {
+      "id": "Q039",
+      "type": "negative",
+      "difficulty": "medium",
+      "input": "Does CIS Controls v8 provide guidance specifically for industrial control systems (ICS) within the main document?",
+      "expected_output": "No. The main CIS Controls v8 document does not contain ICS-specific guidance. It refers readers to a separate 'CIS Controls ICS Implementation Guide' available at cisecurity.org/controls/v8/ for Industrial Control Systems guidance.",
+      "context": ["Control 01 — Procedures and tools references", "Control 02 — Procedures and tools references"],
+      "evaluation_notes": "Tests scope boundaries of the document."
+    },
+    {
+      "id": "Q040",
+      "type": "negative",
+      "difficulty": "hard",
+      "input": "Does CIS Controls v8 recommend using SMS-based one-time codes as the preferred method for MFA on privileged accounts?",
+      "expected_output": "No. CIS Controls v8 explicitly states that neither SMS-based one-time codes nor push notification alerts are recommended for privileged account MFA. The document recommends PAM (Privileged Access Management) tools that provide a one-time password that must be checked out for each use, and suggests using 'jump-boxes' or out-of-band terminal connections for additional security in system administration.",
+      "context": ["Control 06 — Procedures and tools"],
+      "evaluation_notes": "Anti-pattern input — tests whether model catches the explicit negative recommendation."
+    },
+    {
+      "id": "Q041",
+      "type": "negative",
+      "difficulty": "hard",
+      "input": "Is role-based access control (RBAC) defined as an IG1 or IG2 requirement in CIS Controls v8?",
+      "expected_output": "No, role-based access control is neither an IG1 nor an IG2 requirement. Safeguard 6.8 (Define and Maintain Role-Based Access Control) is an IG3-only safeguard. While role-based access is discussed as a best practice concept in the procedures and tools section of Control 6, it is only formally mandated at the IG3 level.",
+      "context": ["Safeguard 6.8", "Control 06 Safeguards table"],
+      "evaluation_notes": "Common misconception test — RBAC sounds foundational but is IG3 only."
+    },
+    {
+      "id": "Q042",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What are the three Development Groups (DG) described in Control 16 for application software security?",
+      "expected_output": "Development Group 1 enterprises largely rely on off-the-shelf or open source software with occasional small additions. Development Group 2 enterprises use custom web/native applications integrated with third-party components, have development staff, and run on-premises or cloud. Development Group 3 enterprises make major investments in custom software critical to their business, may host on-premises or cloud, integrate large ranges of third-party components — software vendors and SaaS providers should treat DG3 as a minimum requirement.",
+      "context": ["Control 16 — Procedures and tools — Development Groups"],
+      "evaluation_notes": "Three-tier structure unique to Control 16."
+    },
+    {
+      "id": "Q043",
+      "type": "factual",
+      "difficulty": "hard",
+      "input": "What specific vulnerability classification schemes and languages does CIS Controls v8 recommend that vulnerability scanning tools support?",
+      "expected_output": "CIS Controls v8 recommends using tools that map vulnerabilities to: CVE (Common Vulnerabilities and Exposures), CCE (Common Configuration Enumeration), OVAL (Open Vulnerability and Assessment Language), CPE (Common Platform Enumeration), CVSS (Common Vulnerability Scoring System), and/or XCCDF (Extensible Configuration Checklist Description Format). These are all components of SCAP (Security Content Automation Protocol).",
+      "context": ["Control 07 — Procedures and tools"],
+      "evaluation_notes": "Technical enumeration requiring multiple acronym retrievals."
+    },
+    {
+      "id": "Q044",
+      "type": "factual",
+      "difficulty": "hard",
+      "input": "What does CIS Controls v8 recommend for verifying the security value of individual defensive actions?",
+      "expected_output": "CIS uses the Community Defense Model (CDM), which analyzes the value of individual defensive actions (Safeguards) against the five most important attack types identified from DBIR and MS-ISAC data. The attacks are described using the MITRE ATT&CK Framework as attack patterns (specific combinations of Tactics and Techniques), providing a consistent and explainable way to assess the security value of a given set of defensive actions across the attacker's life cycle and support strategies like defense-in-depth.",
+      "context": ["Introduction — Evolution of the CIS Controls — CDM section"],
+      "evaluation_notes": "Complex analytical methodology description."
+    },
+    {
+      "id": "Q045",
+      "type": "factual",
+      "difficulty": "hard",
+      "input": "What does CIS Controls v8 say about the security risks of third-party service providers that contract additional parties?",
+      "expected_output": "CIS Controls v8 notes that smaller firms are often a greater risk than large cloud/hosting companies despite receiving less scrutiny. It specifically highlights that a third-party service provider may contract with additional parties (referred to as 'fourth-party' platforms or products) to provide other plugins or services, introducing additional risk. This creates a chain of trust concerns beyond the direct vendor relationship.",
+      "context": ["Control 15 — Why is this Control critical?"],
+      "evaluation_notes": "Supply chain risk nuance — fourth-party concept."
+    },
+    {
+      "id": "Q046",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What is the minimum frequency for reviewing audit logs to detect anomalies?",
+      "expected_output": "Audit log reviews should be conducted weekly, or more frequently, to detect anomalies or abnormal events that could indicate a potential threat. This is Safeguard 8.11 and applies to IG2 and IG3.",
+      "context": ["Safeguard 8.11 — Conduct Audit Log Reviews"],
+      "evaluation_notes": "Frequency plus IG applicability."
+    },
+    {
+      "id": "Q047",
+      "type": "factual",
+      "difficulty": "medium",
+      "input": "What is the minimum number of synchronized time sources that should be configured across enterprise assets?",
+      "expected_output": "At least two synchronized time sources should be configured across enterprise assets, where supported. This is Safeguard 8.4 and applies to IG2 and IG3.",
+      "context": ["Safeguard 8.4 — Standardize Time Synchronization"],
+      "evaluation_notes": "Specific numeric minimum."
+    },
+    {
+      "id": "Q048",
+      "type": "multi-hop",
+      "difficulty": "hard",
+      "input": "What is the complete set of MFA requirements across all safeguards in CIS Controls v8, including which IGs they apply to?",
+      "expected_output": "MFA requirements appear in three safeguards: 6.3 Require MFA for Externally-Exposed Applications (IG1, IG2, IG3); 6.4 Require MFA for Remote Network Access (IG1, IG2, IG3); 6.5 Require MFA for Administrative Access (IG1, IG2, IG3). All three are IG1 requirements, making MFA for external apps, remote access, and admin access part of essential cyber hygiene.",
+      "context": ["Control 06 Safeguards table"],
+      "evaluation_notes": "Aggregated MFA requirement view across the document."
+    },
+    {
+      "id": "Q049",
+      "type": "procedural",
+      "difficulty": "hard",
+      "input": "What does CIS Controls v8 recommend as a structured approach for performing a penetration test from start to finish?",
+      "expected_output": "CIS describes the penetration testing process as: (1) Reconnaissance of the enterprise and environment, and scanning to identify vulnerabilities — ensuring all in-scope assets are discovered dynamically rather than relying on a static list; (2) Identifying vulnerabilities in those targets; (3) Executing exploits to demonstrate how an adversary could subvert security goals or achieve adversarial objectives; (4) Producing results that provide deeper insight into business risks. The test may cover physical access controls, network, system, application layers, and social engineering. The enterprise must define a clear scope and rules of engagement specifying test times, duration, approach, and point of contact.",
+      "context": ["Control 18 — Procedures and tools"],
+      "evaluation_notes": "End-to-end procedural synthesis."
+    },
+    {
+      "id": "Q050",
+      "type": "comparison",
+      "difficulty": "hard",
+      "input": "How does the CIS Controls v8 approach to transitioning from Version 6 differ from transitioning from Version 7 or 7.1?",
+      "expected_output": "For enterprises using Version 7 or 7.1, CIS states they are following an effective and usable security plan, and should consider moving to Version 8 over time — there is no urgency. For enterprises using Version 6 or earlier, CIS recommends planning a transition to Version 8 as soon as practicable, indicating a stronger imperative to upgrade. CIS also notes that for Version 8 it took a more holistic approach working with numerous partners to support the transition ecosystem, compared to prior versions where only simple spreadsheet-based changelogs were available.",
+      "context": ["Introduction — Using or Transitioning from Prior Versions of the CIS Controls"],
+      "evaluation_notes": "Nuanced policy comparison across version levels."
+    }
+  ]
+}
