@@ -1,6 +1,7 @@
 import requests
 from ollama import chat
 from langsmith import traceable
+from ollama import AsyncClient
 
 def create_prompt(query, passages_list):
     prompt = f"""You are a careful RAG assistant answering questions about the CIS Controls v8 document, a set of prioritized cybersecuritysafeguards organized into 18 controls and implementation groups.
@@ -27,13 +28,11 @@ def create_prompt(query, passages_list):
 
 
 @traceable(name="send_prompt_to_ollama")
-def send_prompt_to_ollama(prompt):
-    response = requests.post(
-    "http://127.0.0.1:11434/api/generate",
-    json={
-        "model": "llama3.2:3b",
-        "prompt": prompt,
-        "stream": False
-        }
+async def send_prompt_to_ollama(prompt, stream : bool = False):
+    client = AsyncClient()
+    response = await client.generate(
+        model="llama3.2:3b",
+        prompt=prompt,
+        stream=stream
     )
-    return response.json()
+    return response

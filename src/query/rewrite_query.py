@@ -3,7 +3,7 @@ from langsmith import traceable
 
 
 @traceable(name="rewrite_query")
-def rewrite_query(query):
+async def rewrite_query(query):
     prompt = f"""
     You are a query rewriting assistant for a RAG retrieval system. The knowledge base contains the CIS Critical Security Controls Version 8 (CIS Controls v8), published by the Center for Internet Security (CIS). 
     This document defines 18 security controls, each broken into specific Safeguards, organized across three Implementation Groups (IG1, IG2, IG3). 
@@ -53,6 +53,7 @@ def rewrite_query(query):
     QUERY:
     {query}
     """
-    query = send_prompt_to_ollama(prompt)['response'].strip()
-    rewritten_query = f"{query}"
+    response_dict = await send_prompt_to_ollama(prompt, stream=False)
+
+    rewritten_query = response_dict.response.strip()
     return rewritten_query
