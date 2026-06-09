@@ -49,10 +49,8 @@ htmlcov/
 *.index
 *.pkl
 *.pickle
-embeddings/
 chroma/
 .chroma/
-vectorstore/
 vector_store/
 *.sqlite
 *.sqlite3
