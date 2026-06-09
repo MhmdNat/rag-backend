@@ -1,3 +1,5 @@
+import asyncio
+
 from sentence_transformers import CrossEncoder
 import torch
 import dotenv
@@ -18,9 +20,9 @@ def get_model():
 
 
 @traceable(name="rerank")
-def rerank(query, passages):
+async def rerank(query, passages):
     pairs = [(query, passage.page_content) for passage in passages]
-    scores = get_model().predict(pairs)
+    scores = await asyncio.to_thread(get_model().predict, pairs)
     scored_passages = sorted(
         zip(passages, scores),
         key=lambda item: item[1],
@@ -30,8 +32,8 @@ def rerank(query, passages):
     return scored_passages
 
 @traceable(name="extract_top_k_reranked")
-def extract_top_k_reranked(query, passages, top_k=5):
-    scored_passages = rerank(query, passages)
+async def extract_top_k_reranked(query, passages, top_k=5):
+    scored_passages = await rerank(query, passages)
     top_k_passages = [passage for passage, _ in scored_passages[:top_k]]
     print("\nTop passage after reranking:")
     print(f"{top_k_passages[0].page_content[:100]}..." if top_k_passages else "No passages reranked")

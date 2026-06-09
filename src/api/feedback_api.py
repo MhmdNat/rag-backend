@@ -13,6 +13,9 @@ from src.query.reranker import get_model
 from src.query.web_pipeline import run_web_rag_pipeline
 from langsmith import traceable
 
+import asyncio
+from fastapi.responses import StreamingResponse
+
 dotenv.load_dotenv()
 
 langsmith_client = Client()
@@ -24,8 +27,8 @@ async def lifespan(app: FastAPI):
     if not api_key:
         raise RuntimeError("LANGCHAIN_API_KEY is not set in environment.")
     # Warm the heavy shared models once per API process so requests reuse them.
-    create_embedding_model()
-    get_model()
+    await asyncio.to_thread(create_embedding_model)
+    await asyncio.to_thread(get_model)
     print("LangSmith connection OK.")
     yield
     close_retriever_client()
@@ -46,26 +49,25 @@ def health():
 
 @app.post("/api/query", response_model=QueryResponse)
 @traceable(name="query_endpoint")
-def query_endpoint(request: QueryRequest):
+async def query_endpoint(request: QueryRequest):
+    if not request.query:
+        raise HTTPException(status_code=400, detail="No query was provided")
+    
     try:
-        result = run_web_rag_pipeline(
+        # We call the generator, which will handle both the tokens and the trailing metadata
+        generator = run_web_rag_pipeline(
             query_text=request.query,
             index_name=request.index,
-            top_k=request.top_k,
+            top_k=request.top_k
         )
+        
+        return StreamingResponse(
+            generator, 
+            media_type="text/event-stream" # Tells the browser to listen for structured events
+        )
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
-
-    run_id = result["run_id"]
-    if not run_id:
-        raise HTTPException(status_code=500, detail="Failed to capture LangSmith run_id.")
-
-    return QueryResponse(
-        run_id=run_id,
-        query=result["query"],
-        rewritten_query=result["rewritten_query"],
-        answer=result["answer"],
-    )
 
 
 @app.post("/api/feedback", response_model=FeedbackResponse)
