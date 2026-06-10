@@ -11,6 +11,10 @@ async def rewrite_query(query):
 
     Your ONLY job is to rewrite the user's query IF AND ONLY IF IT IS NECESSARY to improve vector search retrieval quality against this document.
 
+    CRITICAL RULE FOR OUT-OF-DOMAIN QUERIES:
+    - If the user's query is completely unrelated to cybersecurity, IT, networking, or the CIS Controls (e.g., general knowledge questions, history, pop culture, or unrelated topics like "how tall is the Eiffel Tower"), you MUST return the original query EXACTLY as it was typed. 
+    - Do NOT attempt to translate, map, abstract, or generalize unrelated questions into cybersecurity terminology.
+    
     ABSOLUTE RULES — NEVER VIOLATE:
     1. Never modify, replace, abbreviate, or generalize named entities. Preserve exactly:
     - Control names: "CIS Control 1", "CIS Control 7", etc.

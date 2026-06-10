@@ -12,7 +12,7 @@ from langsmith import traceable
 @traceable(name="web_rag_pipeline")
 async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5):
     rewritten_query = await rewrite_query(query_text)
-    retrieved_results, _ = await retrieve_top_k(rewritten_query, index_name=index_name, top_k=50)
+    retrieved_results, _ = await retrieve_top_k(rewritten_query, index_name=index_name, top_k=30)
     reranked_results = await extract_top_k_reranked(rewritten_query, retrieved_results, top_k=top_k)
     passages = format_passages(reranked_results)
 
@@ -20,11 +20,12 @@ async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5):
     response_stream = await send_prompt_to_ollama(prompt, stream = True)
 
     full_answer = ""
-    async for chunk in response_stream: # wait for each chunk in the response strea
+    async for chunk in response_stream:
         token = chunk.response
         if token:
             full_answer += token
-            yield f"event: token\ndata: {token}\n\n"
+            payload = json.dumps({"t": token})  # JSON handles \n, spaces, everything
+            yield f"event: token\ndata: {payload}\n\n"
 
     current_run_tree = get_current_run_tree()
     run_id = str(current_run_tree.id) if current_run_tree else ""
@@ -32,6 +33,7 @@ async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5):
         "run_id": run_id,
         "query": query_text,
         "rewritten_query": rewritten_query,
-        "answer": full_answer
+        "answer": full_answer,
+        "Context": passages
     }
     yield f"event: metadata\ndata: {json.dumps(metadata_payload)}\n\n"
