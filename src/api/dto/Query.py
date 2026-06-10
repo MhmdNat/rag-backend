@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 class QueryRequest(BaseModel):
     query: str
-    top_k: int = Field(default=5, ge=1, le=20)
-    index: str = Field(default="RAGDocs")
+    user_id: int = Field(default=1)
+    chat_id: Optional[int] = Field(default=None)
 
 
 class QueryResponse(BaseModel):

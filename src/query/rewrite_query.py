@@ -3,7 +3,7 @@ from langsmith import traceable
 
 
 @traceable(name="rewrite_query")
-def rewrite_query(query):
+async def rewrite_query(query):
     prompt = f"""
     You are a query rewriting assistant for a RAG retrieval system. The knowledge base contains the CIS Critical Security Controls Version 8 (CIS Controls v8), published by the Center for Internet Security (CIS). 
     This document defines 18 security controls, each broken into specific Safeguards, organized across three Implementation Groups (IG1, IG2, IG3). 
@@ -11,6 +11,10 @@ def rewrite_query(query):
 
     Your ONLY job is to rewrite the user's query IF AND ONLY IF IT IS NECESSARY to improve vector search retrieval quality against this document.
 
+    CRITICAL RULE FOR OUT-OF-DOMAIN QUERIES:
+    - If the user's query is completely unrelated to cybersecurity, IT, networking, or the CIS Controls (e.g., general knowledge questions, history, pop culture, or unrelated topics like "how tall is the Eiffel Tower"), you MUST return the original query EXACTLY as it was typed. 
+    - Do NOT attempt to translate, map, abstract, or generalize unrelated questions into cybersecurity terminology.
+    
     ABSOLUTE RULES — NEVER VIOLATE:
     1. Never modify, replace, abbreviate, or generalize named entities. Preserve exactly:
     - Control names: "CIS Control 1", "CIS Control 7", etc.
@@ -53,6 +57,7 @@ def rewrite_query(query):
     QUERY:
     {query}
     """
-    query = send_prompt_to_ollama(prompt)['response'].strip()
-    rewritten_query = f"{query}"
+    response_dict = await send_prompt_to_ollama(prompt, stream=False)
+
+    rewritten_query = response_dict.response.strip()
     return rewritten_query

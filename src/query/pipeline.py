@@ -11,7 +11,7 @@ def run_rag_pipeline(query_text, index_name="RAGDocs", top_k=5):
     passages = format_passages(reranked_results)
 
     prompt = create_prompt(rewritten_query, passages)
-    response = send_prompt_to_ollama(prompt)
+    response = send_prompt_to_ollama(prompt, stream=False).json()
 
     return {
         "query": query_text,
