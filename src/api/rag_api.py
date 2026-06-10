@@ -18,6 +18,9 @@ import asyncio
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+import src.api.service.message as message_service
+from src.api.service.message import get_db
+
 dotenv.load_dotenv()
 
 langsmith_client = Client()
@@ -69,15 +72,33 @@ def health():
 @app.post("/api/query", response_model=QueryResponse)
 @traceable(name="query_endpoint")
 async def query_endpoint(request: QueryRequest):
+    print("new request recieved")
     if not request.query:
         raise HTTPException(status_code=400, detail="No query was provided")
+    
+    #user_id = request.user_id  # this should later be extracted from jwt not passed by frontend
+    #if not user_id:
+    #    raise HTTPException(status_code=400, detail="No user_id provided in request")
+    
+    #save user message
+    try:
+        chat_id, message_id = await asyncio.to_thread(
+            message_service.save_message, 
+            content=request.query, 
+            user_id=1, 
+            chat_id=request.chat_id, 
+            role="user")
+        print(f"Saved user message with id {message_id} in chat {chat_id}")
+    except Exception as e:
+        print(f"Error saving user message: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error saving user message: {str(e)}")
     
     try:
         # We call the generator, which will handle both the tokens and the trailing metadata
         generator = run_web_rag_pipeline(
             query_text=request.query,
-            index_name=request.index,
-            top_k=request.top_k
+            user_id=1,
+            chat_id=chat_id
         )
         
         return StreamingResponse(

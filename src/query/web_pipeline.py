@@ -1,3 +1,4 @@
+import asyncio
 import json
 
 from langsmith.run_helpers import get_current_run_tree
@@ -8,9 +9,10 @@ from src.query.rewrite_query import rewrite_query
 from src.query.retriever import retrieve_top_k
 from langsmith import traceable
 
+from src.api.service.message import save_message
 
 @traceable(name="web_rag_pipeline")
-async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5):
+async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5, user_id=None, chat_id=None):
     rewritten_query = await rewrite_query(query_text)
     retrieved_results, _ = await retrieve_top_k(rewritten_query, index_name=index_name, top_k=30)
     reranked_results = await extract_top_k_reranked(rewritten_query, retrieved_results, top_k=top_k)
@@ -34,6 +36,16 @@ async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5):
         "query": query_text,
         "rewritten_query": rewritten_query,
         "answer": full_answer,
-        "Context": passages
+        "Context": passages,
+        "chat_id": chat_id,
+        "user_id": user_id
     }
     yield f"event: metadata\ndata: {json.dumps(metadata_payload)}\n\n"
+
+    await asyncio.to_thread(
+        save_message,
+        content=full_answer,
+        user_id=user_id,
+        chat_id=chat_id, 
+        role="assistant"
+    )

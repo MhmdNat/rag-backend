@@ -1,8 +1,9 @@
 
-from db.db import SessionLocal
-from db.models.message import Message
-from db.models.chat import Chat
-from db.models.user import User
+from src.db.db import SessionLocal
+from src.db.models.message import Message
+from src.db.models.chat import Chat
+from src.db.models.user import User
+from typing import Optional
 def get_db():
     db = SessionLocal()
     try:
@@ -28,14 +29,29 @@ def delete_chat(db, user_id: int, chat_id: int) -> bool:
     return True
 
 
-def save_message(db, content: str, user_id: int, chat_id: int, role: str) -> str:
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
-    if not chat:
-        #create chat if it doesn't exist
-        chat = create_chat(db, user_id=user_id, chat_title="New Chat") # change this to something more meaningful later
+def save_message(content: str, user_id: int, chat_id: Optional[int], role: str):
+    db = SessionLocal()  # open a real session directly
+    try:
+        chat = None
+        if chat_id is not None:
+            chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+        if not chat:
+            title = content[:20].strip()
+            if len(content) > 20:
+                title += "…"
+            chat = Chat(user_id=user_id, chat_title=title)
+            db.add(chat)
+            db.commit()
+            db.refresh(chat)
 
-    messageModel = Message(chat_id=chat.id, role=role, content=content, role=role)
-    db.add(messageModel)
-    db.commit()
-    db.refresh(messageModel)
-    return messageModel
+        message = Message(chat_id=chat.id, role=role, content=content)
+        db.add(message)
+        db.commit()
+        db.refresh(message)
+        return chat.id, message.id
+    except Exception as e:
+        print(f"Error in save_message: {str(e)}")
+        db.rollback()
+        raise
+    finally:
+        db.close()
