@@ -55,7 +55,6 @@ vector_store/
 *.sqlite
 *.sqlite3
 *.db
-models/
 *.bin
 *.gguf
 
