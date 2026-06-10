@@ -5,6 +5,7 @@ import dotenv
 from fastapi import FastAPI, HTTPException
 from langsmith import Client
 
+from src.db.db import init_db
 from src.api.dto.Query import QueryRequest, QueryResponse
 from src.api.dto.Feedback import FeedbackRequest, FeedbackResponse
 from src.query.retriever import close_retriever_client
@@ -28,9 +29,14 @@ async def lifespan(app: FastAPI):
     if not api_key:
         raise RuntimeError("LANGCHAIN_API_KEY is not set in environment.")
     # Warm the heavy shared models once per API process so requests reuse them.
+
     await asyncio.to_thread(create_embedding_model)
     await asyncio.to_thread(get_model)
+
     print("LangSmith connection OK.")
+
+    await asyncio.to_thread(init_db)
+    print("Database initialized.")
     yield
     close_retriever_client()
 
