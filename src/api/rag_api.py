@@ -19,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import src.api.service.message as message_service
-from src.api.service.message import get_db
+
 
 dotenv.load_dotenv()
 
@@ -132,3 +132,13 @@ def submit_feedback(request: FeedbackRequest):
         score=request.score,
         message=f"Feedback recorded: {label}",
     )
+
+
+@app.get("/api/chats")
+def get_chats(user_id: int = 1):
+    return message_service.get_chats_for_user(user_id)
+
+
+@app.get("/api/chats/{chat_id}/messages")
+def get_messages(chat_id: int, user_id: int = 1):
+    return message_service.get_messages_for_chat(chat_id, user_id)

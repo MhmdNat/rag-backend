@@ -55,3 +55,19 @@ def save_message(content: str, user_id: int, chat_id: Optional[int], role: str):
         raise
     finally:
         db.close()
+
+
+def get_chats_for_user(user_id: int):
+    db = SessionLocal()
+    try:
+        return db.query(Chat).filter(Chat.user_id == user_id).all()
+    finally:
+        db.close()
+
+
+def get_messages_for_chat(chat_id: Optional[int], user_id: int):
+    db = SessionLocal()
+    try:
+        return db.query(Message).filter(Message.chat_id == chat_id, Chat.user_id == user_id).all()
+    finally:
+        db.close()
