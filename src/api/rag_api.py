@@ -19,6 +19,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import src.api.service.message as message_service
+from typing import Optional
 
 
 dotenv.load_dotenv()
@@ -142,3 +143,12 @@ def get_chats(user_id: int = 1):
 @app.get("/api/chats/{chat_id}/messages")
 def get_messages(chat_id: int, user_id: int = 1):
     return message_service.get_messages_for_chat(chat_id, user_id)
+
+
+@app.delete("/api/chats/{chat_id}/user/{user_id}")
+def delete_chat(chat_id: Optional[int], user_id: int):
+    print(f"Request to delete chat {chat_id} for user {user_id}")
+    success = message_service.delete_chat(chat_id, user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Chat not found or does not belong to user")
+    return {"message": "Chat deleted"}

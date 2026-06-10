@@ -71,3 +71,17 @@ def get_messages_for_chat(chat_id: Optional[int], user_id: int):
         return db.query(Message).filter(Message.chat_id == chat_id, Chat.user_id == user_id).all()
     finally:
         db.close()
+
+
+def delete_chat(chat_id: Optional[int], user_id: int):
+    db = SessionLocal()
+    print(f"Attempting to delete chat {chat_id} for user {user_id}")
+    try:
+        chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+        if not chat:
+            return False
+        db.delete(chat)
+        db.commit()
+        return True
+    finally:
+        db.close()

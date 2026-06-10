@@ -36,7 +36,9 @@ async def run_web_rag_pipeline(query_text, index_name="RAGDocs", top_k=5, user_i
         "query": query_text,
         "rewritten_query": rewritten_query,
         "answer": full_answer,
-        "Context": passages,
+        "Context": "\n".join(
+            f"Passage {i+1}: {p}" for i, p in enumerate(passages)
+        ),
         "chat_id": chat_id,
         "user_id": user_id
     }
