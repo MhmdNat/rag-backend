@@ -80,13 +80,13 @@ async def query_endpoint(request: QueryRequest):
     #user_id = request.user_id  # this should later be extracted from jwt not passed by frontend
     #if not user_id:
     #    raise HTTPException(status_code=400, detail="No user_id provided in request")
-    
+    user_id = 1 # hardcoded for now until we implement auth and can extract from jwt
     #save user message
     try:
         chat_id, message_id = await asyncio.to_thread(
             message_service.save_message, 
             content=request.query, 
-            user_id=1, 
+            user_id=user_id, 
             chat_id=request.chat_id, 
             role="user")
         print(f"Saved user message with id {message_id} in chat {chat_id}")
@@ -98,8 +98,9 @@ async def query_endpoint(request: QueryRequest):
         # We call the generator, which will handle both the tokens and the trailing metadata
         generator = run_web_rag_pipeline(
             query_text=request.query,
-            user_id=1,
-            chat_id=chat_id
+            user_id=user_id,
+            chat_id=chat_id,
+            query_id=message_id
         )
         
         return StreamingResponse(
@@ -114,25 +115,48 @@ async def query_endpoint(request: QueryRequest):
 @app.post("/api/feedback", response_model=FeedbackResponse)
 @traceable(name="submit_feedback")
 def submit_feedback(request: FeedbackRequest):
+    #try:
+    #    feedback = langsmith_client.create_feedback(
+    #        run_id=request.run_id,
+    #        key="human_feedback",          # label shown in LangSmith dashboard
+    #        score=request.score,           # 0 or 1
+    #        comment=request.comment,       # optional text
+    #        feedback_source_type="api",    # marks this as coming from your app
+    #    )
+    #except Exception as e:
+    #    raise HTTPException(status_code=500, detail=f"LangSmith error: {str(e)}")
+#
+    #label = "thumbs_up" if request.score == 1 else "thumbs_down"
+#
+    #return FeedbackResponse(
+    #    feedback_id=str(feedback.id),
+    #    run_id=request.run_id,
+    #    score=request.score,
+    #    message=f"Feedback recorded: {label}",
+    #)
     try:
-        feedback = langsmith_client.create_feedback(
-            run_id=request.run_id,
-            key="human_feedback",          # label shown in LangSmith dashboard
-            score=request.score,           # 0 or 1
-            comment=request.comment,       # optional text
-            feedback_source_type="api",    # marks this as coming from your app
-        )
+        query_message_id = request.query_message_id
+        answer_message_id = request.answer_message_id
+        rating = request.rating
+        if rating not in (0, 1):
+            raise HTTPException(status_code=400, detail=f"Invalid rating value: {rating}. Must be 0 or 1.")
+        if rating == 0 and not request.reason:
+            raise HTTPException(status_code=400, detail="Reason is required when rating is 0.")
+        reason = request.reason
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"LangSmith error: {str(e)}")
-
-    label = "thumbs_up" if request.score == 1 else "thumbs_down"
-
-    return FeedbackResponse(
-        feedback_id=str(feedback.id),
-        run_id=request.run_id,
-        score=request.score,
-        message=f"Feedback recorded: {label}",
+        raise HTTPException(status_code=400, detail=f"Invalid feedback request: {str(e)}")
+    
+    # Save feedback to the database
+    feedback_response = message_service.save_feedback(
+        chat_id=request.chat_id,
+        query_message_id=query_message_id,
+        answer_message_id=answer_message_id,
+        rating=rating,
+        reason=reason
     )
+
+    return feedback_response
+
 
 
 @app.get("/api/chats")

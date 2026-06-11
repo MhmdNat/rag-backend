@@ -1,9 +1,11 @@
 
+from src.api.dto.Feedback import FeedbackResponse
 from src.db.db import SessionLocal
 from src.db.models.message import Message
 from src.db.models.chat import Chat
 from src.db.models.user import User
 from typing import Optional
+from src.db.models.feedback import Feedback
 def get_db():
     db = SessionLocal()
     try:
@@ -83,5 +85,23 @@ def delete_chat(chat_id: Optional[int], user_id: int):
         db.delete(chat)
         db.commit()
         return True
+    finally:
+        db.close()
+
+
+def save_feedback(chat_id: int, query_message_id: int, answer_message_id: int, rating: int, reason: Optional[str]):
+    db = SessionLocal()
+    try:
+        feedback = Feedback(
+            chat_id=chat_id,
+            query_message_id=query_message_id,
+            answer_message_id=answer_message_id,
+            rating=rating,
+            reason=reason
+        )
+        db.add(feedback)
+        db.commit()
+        db.refresh(feedback)
+        return FeedbackResponse(feedback_id=feedback.id, message="Feedback saved successfully")
     finally:
         db.close()
