@@ -1,4 +1,3 @@
-
 from src.api.dto.Feedback import FeedbackResponse
 from src.db.db import SessionLocal
 from src.db.models.message import Message
@@ -6,6 +5,8 @@ from src.db.models.chat import Chat
 from src.db.models.user import User
 from typing import Optional
 from src.db.models.feedback import Feedback
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -22,17 +23,19 @@ def create_chat(db, user_id: int, chat_title: str) -> Chat:
     return chatModel
 
 
-def delete_chat(db, user_id: int, chat_id: int) -> bool:
-    chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
-    if not chat:
-        return False
-    db.delete(chat)
-    db.commit()
-    return True
-
-
-def save_message(content: str, user_id: int, chat_id: Optional[int], role: str):
-    db = SessionLocal()  # open a real session directly
+def save_message(
+    content: str,
+    user_id: int,
+    chat_id: Optional[int],
+    role: str,
+    parent_message_id: Optional[int] = None,
+):
+    """
+    Save a message. For regenerated assistant responses, pass parent_message_id
+    equal to the id of the FIRST assistant message in the version chain.
+    Returns (chat_id, message_id).
+    """
+    db = SessionLocal()
     try:
         chat = None
         if chat_id is not None:
@@ -46,7 +49,12 @@ def save_message(content: str, user_id: int, chat_id: Optional[int], role: str):
             db.commit()
             db.refresh(chat)
 
-        message = Message(chat_id=chat.id, role=role, content=content)
+        message = Message(
+            chat_id=chat.id,
+            role=role,
+            content=content,
+            parent_message_id=parent_message_id,
+        )
         db.add(message)
         db.commit()
         db.refresh(message)
@@ -68,9 +76,129 @@ def get_chats_for_user(user_id: int):
 
 
 def get_messages_for_chat(chat_id: Optional[int], user_id: int):
+    """
+    Return messages for a chat, with assistant messages grouped into version chains.
+
+    Each item in the returned list has the shape:
+      { id, chat_id, role, content, created_at, context,
+        versions: [{id, content, context}],   # only on assistant messages
+        active_version_index: int }
+
+    For user messages, `versions` is omitted.
+    For assistant messages, `versions` holds ALL versions (oldest first) and
+    `active_version_index` points at the last one (newest).
+    The top-level `id` / `content` always mirror the active version.
+    """
     db = SessionLocal()
     try:
-        return db.query(Message).filter(Message.chat_id == chat_id, Chat.user_id == user_id).all()
+        # Verify the chat belongs to the user
+        chat = db.query(Chat).filter(Chat.id == chat_id, Chat.user_id == user_id).first()
+        if not chat:
+            return []
+
+        all_messages = (
+            db.query(Message)
+            .filter(Message.chat_id == chat_id)
+            .order_by(Message.id.asc())
+            .all()
+        )
+
+        # Separate user messages and assistant messages
+        result = []
+        # Map from original_assistant_id -> list of version Message objects (in order)
+        version_groups: dict[int, list[Message]] = {}
+
+        for m in all_messages:
+            if m.role == "user":
+                result.append({
+                    "id": m.id,
+                    "chat_id": m.chat_id,
+                    "role": m.role,
+                    "content": m.content,
+                    "created_at": m.created_at.isoformat() if m.created_at else None,
+                })
+            elif m.role == "assistant":
+                # Original message: parent_message_id is None → it IS the root
+                if m.parent_message_id is None:
+                    version_groups[m.id] = [m]
+                else:
+                    # It's a regeneration — append to its root's group
+                    root_id = m.parent_message_id
+                    if root_id not in version_groups:
+                        version_groups[root_id] = []
+                    version_groups[root_id].append(m)
+
+        # Now attach version groups to user messages in conversation order.
+        # We pair each assistant version-group with the user message that preceded it.
+        # The root id for each group appears in all_messages in order, so we walk again.
+        seen_roots = set()
+        final_result = []
+        for m in all_messages:
+            if m.role == "user":
+                final_result.append({
+                    "id": m.id,
+                    "chat_id": m.chat_id,
+                    "role": m.role,
+                    "content": m.content,
+                    "created_at": m.created_at.isoformat() if m.created_at else None,
+                })
+            elif m.role == "assistant" and m.parent_message_id is None:
+                # This is a root assistant message
+                if m.id in seen_roots:
+                    continue
+                seen_roots.add(m.id)
+                versions = version_groups.get(m.id, [m])
+                active_idx = len(versions) - 1
+                active = versions[active_idx]
+                final_result.append({
+                    "id": active.id,
+                    "chat_id": active.chat_id,
+                    "role": "assistant",
+                    "content": active.content,
+                    "created_at": active.created_at.isoformat() if active.created_at else None,
+                    "versions": [
+                        {"id": v.id, "content": v.content}
+                        for v in versions
+                    ],
+                    "active_version_index": active_idx,
+                })
+            # Skip non-root assistant messages (they appear inside versions[])
+
+        return final_result
+    finally:
+        db.close()
+
+
+def get_query_message_id_for_assistant(assistant_message_id: int) -> Optional[int]:
+    """
+    Given an assistant message id (any version), find the user message that
+    immediately precedes the root assistant message in the same chat.
+    Returns the user message id, or None if not found.
+    """
+    db = SessionLocal()
+    try:
+        msg = db.query(Message).filter(Message.id == assistant_message_id).first()
+        if not msg:
+            return None
+
+        # Resolve to root
+        root_id = msg.id if msg.parent_message_id is None else msg.parent_message_id
+        root = db.query(Message).filter(Message.id == root_id).first()
+        if not root:
+            return None
+
+        # Find the latest user message before the root in the same chat
+        user_msg = (
+            db.query(Message)
+            .filter(
+                Message.chat_id == root.chat_id,
+                Message.role == "user",
+                Message.id < root.id,
+            )
+            .order_by(Message.id.desc())
+            .first()
+        )
+        return user_msg.id if user_msg else None
     finally:
         db.close()
 

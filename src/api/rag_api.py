@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from langsmith import Client
 
 from src.db.db import init_db
-from src.api.dto.Query import QueryRequest, QueryResponse
+from src.api.dto.Query import QueryRequest, QueryResponse, RegenerateRequest
 from src.api.dto.Feedback import FeedbackRequest, FeedbackResponse
 from src.query.retriever import close_retriever_client
 from src.embeddings.model import create_embedding_model
@@ -32,17 +32,14 @@ async def lifespan(app: FastAPI):
     api_key = os.getenv("LANGCHAIN_API_KEY")
     if not api_key:
         raise RuntimeError("LANGCHAIN_API_KEY is not set in environment.")
-    # Warm the heavy shared models once per API process so requests reuse them.
-
     await asyncio.to_thread(create_embedding_model)
     await asyncio.to_thread(get_model)
-
     print("LangSmith connection OK.")
-
     await asyncio.to_thread(init_db)
     print("Database initialized.")
     yield
     close_retriever_client()
+
 
 app = FastAPI(
     title="RAG Feedback API",
@@ -52,8 +49,8 @@ app = FastAPI(
 )
 
 origins = [
-    "http://localhost:5173", # Default Vite port
-    "http://localhost:3000", # Default CRA port
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]
 
 app.add_middleware(
@@ -73,67 +70,64 @@ def health():
 @app.post("/api/query", response_model=QueryResponse)
 @traceable(name="query_endpoint")
 async def query_endpoint(request: QueryRequest):
-    print("new request recieved")
+    print("new request received")
     if not request.query:
         raise HTTPException(status_code=400, detail="No query was provided")
-    
-    #user_id = request.user_id  # this should later be extracted from jwt not passed by frontend
-    #if not user_id:
-    #    raise HTTPException(status_code=400, detail="No user_id provided in request")
-    user_id = 1 # hardcoded for now until we implement auth and can extract from jwt
-    #save user message
+
+    user_id = 1  # hardcoded until auth is implemented
+
     try:
         chat_id, message_id = await asyncio.to_thread(
-            message_service.save_message, 
-            content=request.query, 
-            user_id=user_id, 
-            chat_id=request.chat_id, 
-            role="user")
+            message_service.save_message,
+            content=request.query,
+            user_id=user_id,
+            chat_id=request.chat_id,
+            role="user",
+        )
         print(f"Saved user message with id {message_id} in chat {chat_id}")
     except Exception as e:
         print(f"Error saving user message: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error saving user message: {str(e)}")
-    
+
     try:
-        # We call the generator, which will handle both the tokens and the trailing metadata
         generator = run_web_rag_pipeline(
             query_text=request.query,
             user_id=user_id,
             chat_id=chat_id,
-            query_id=message_id
+            query_id=message_id,
+            parent_message_id=None,  # first response — no parent
         )
-        
-        return StreamingResponse(
-            generator, 
-            media_type="text/event-stream" # Tells the browser to listen for structured events
-        )
-        
+        return StreamingResponse(generator, media_type="text/event-stream")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
+
+
+@app.post("/api/regenerate")
+@traceable(name="regenerate_endpoint")
+async def regenerate_endpoint(request: RegenerateRequest):
+    """
+    Re-run the RAG pipeline for an existing query and stream a new response version.
+    The new assistant message is saved with parent_message_id = root_assistant_message_id
+    so all versions are linked.
+    """
+    user_id = 1  # hardcoded until auth is implemented
+
+    try:
+        generator = run_web_rag_pipeline(
+            query_text=request.original_query,
+            user_id=user_id,
+            chat_id=request.chat_id,
+            query_id=request.query_message_id,
+            parent_message_id=request.root_assistant_message_id,
+        )
+        return StreamingResponse(generator, media_type="text/event-stream")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Regeneration pipeline error: {str(e)}")
 
 
 @app.post("/api/feedback", response_model=FeedbackResponse)
 @traceable(name="submit_feedback")
 def submit_feedback(request: FeedbackRequest):
-    #try:
-    #    feedback = langsmith_client.create_feedback(
-    #        run_id=request.run_id,
-    #        key="human_feedback",          # label shown in LangSmith dashboard
-    #        score=request.score,           # 0 or 1
-    #        comment=request.comment,       # optional text
-    #        feedback_source_type="api",    # marks this as coming from your app
-    #    )
-    #except Exception as e:
-    #    raise HTTPException(status_code=500, detail=f"LangSmith error: {str(e)}")
-#
-    #label = "thumbs_up" if request.score == 1 else "thumbs_down"
-#
-    #return FeedbackResponse(
-    #    feedback_id=str(feedback.id),
-    #    run_id=request.run_id,
-    #    score=request.score,
-    #    message=f"Feedback recorded: {label}",
-    #)
     try:
         query_message_id = request.query_message_id
         answer_message_id = request.answer_message_id
@@ -145,18 +139,15 @@ def submit_feedback(request: FeedbackRequest):
         reason = request.reason
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid feedback request: {str(e)}")
-    
-    # Save feedback to the database
+
     feedback_response = message_service.save_feedback(
         chat_id=request.chat_id,
         query_message_id=query_message_id,
         answer_message_id=answer_message_id,
         rating=rating,
-        reason=reason
+        reason=reason,
     )
-
     return feedback_response
-
 
 
 @app.get("/api/chats")
@@ -166,6 +157,7 @@ def get_chats(user_id: int = 1):
 
 @app.get("/api/chats/{chat_id}/messages")
 def get_messages(chat_id: int, user_id: int = 1):
+    # Returns versioned message list — see message_service.get_messages_for_chat docstring
     return message_service.get_messages_for_chat(chat_id, user_id)
 
 

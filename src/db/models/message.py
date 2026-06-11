@@ -13,4 +13,9 @@ class Message(Base):
     content: Mapped[str] = mapped_column(String(5000), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=text("CURRENT_TIMESTAMP"), nullable=False)
 
+    # For regenerated responses: points to the FIRST assistant message in the version chain.
+    # All regenerations of the same query share the same parent_message_id value.
+    # The original (first) assistant message has parent_message_id = NULL.
+    parent_message_id: Mapped[int | None] = mapped_column(ForeignKey("messages.id"), nullable=True)
+
     chat: Mapped["Chat"] = relationship("Chat", back_populates="messages")
