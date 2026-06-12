@@ -31,7 +31,7 @@ async def close_retriever_client():
     _vectorstore = None
 
 @traceable(name="retrieve_top_k")
-async def retrieve_top_k(query, index_name="RAGDocs", top_k=30):
+async def retrieve_top_k(query, index_name="RAGDocs", top_k=20):
     vectorstore = await get_vectorstore(index_name)
     retrieved_results = await vectorstore.asimilarity_search(query, k=top_k)
 
