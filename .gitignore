@@ -76,3 +76,4 @@ Thumbs.db
 .vector_db/
 weaviate_data/
 record_manager_cache.sql
+uv.lock

@@ -15,7 +15,7 @@ def get_model():
     if model is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Loading reranker model on {device}...")
-        model = CrossEncoder("BAAI/bge-reranker-v2-m3", device=device)
+        model = CrossEncoder("mixedbread-ai/mxbai-rerank-large-v1", device=device)
     return model
 
 

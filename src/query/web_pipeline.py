@@ -22,7 +22,7 @@ async def run_web_rag_pipeline(
     parent_message_id: Optional[int] = None,   # set when this is a regeneration
 ):
     rewritten_query = await rewrite_query(query_text)
-    retrieved_results, _ = await retrieve_top_k(rewritten_query, index_name=index_name, top_k=30)
+    retrieved_results, _ = await retrieve_top_k(rewritten_query, index_name=index_name, top_k=20)
     reranked_results = await extract_top_k_reranked(rewritten_query, retrieved_results, top_k=top_k)
     passages = format_passages(reranked_results)
 

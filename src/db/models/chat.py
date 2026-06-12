@@ -11,4 +11,4 @@ class Chat(Base):
     chat_title: Mapped[str] = mapped_column(String(255), nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="chats")
-    messages: Mapped[list["Message"]] = relationship("Message", back_populates="chat")
+    messages: Mapped[list["Message"]] = relationship("Message", back_populates="chat", cascade="all, delete-orphan")
