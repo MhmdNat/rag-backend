@@ -4,7 +4,7 @@ FastAPI backend powering Astra: handles RAG queries (retrieve → rerank → gen
 streams responses via Server-Sent Events, and persists chats, messages, and feedback
 to MySQL.
 
-**Frontend repo:** \[link to your frontend repo\](https://github.com/MhmdNat/rag-chat-ui)
+**Frontend repo:** [Astra Frontend](https://github.com/MhmdNat/rag-chat-ui)
 
 ---
 
