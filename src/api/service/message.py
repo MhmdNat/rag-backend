@@ -30,11 +30,6 @@ def save_message(
     role: str,
     parent_message_id: Optional[int] = None,
 ):
-    """
-    Save a message. For regenerated assistant responses, pass parent_message_id
-    equal to the id of the FIRST assistant message in the version chain.
-    Returns (chat_id, message_id).
-    """
     db = SessionLocal()
     try:
         chat = None
@@ -74,7 +69,6 @@ def get_chats_for_user(user_id: int):
     finally:
         db.close()
 
-
 def get_messages_for_chat(chat_id: Optional[int], user_id: int):
     """
     Return messages for a chat, with assistant messages grouped into version chains.
@@ -82,7 +76,8 @@ def get_messages_for_chat(chat_id: Optional[int], user_id: int):
     Each item in the returned list has the shape:
       { id, chat_id, role, content, created_at, context,
         versions: [{id, content, context}],   # only on assistant messages
-        active_version_index: int }
+        active_version_index: int,
+        feedback: {rating, reason} | None }
 
     For user messages, `versions` is omitted.
     For assistant messages, `versions` holds ALL versions (oldest first) and
@@ -103,6 +98,14 @@ def get_messages_for_chat(chat_id: Optional[int], user_id: int):
             .all()
         )
 
+        # Bulk fetch all feedback for messages in this chat in a single query
+        all_message_ids = [m.id for m in all_messages]
+        feedback_map = {}
+        if all_message_ids:
+            feedbacks = db.query(Feedback).filter(Feedback.answer_message_id.in_(all_message_ids)).all()
+            for f in feedbacks:
+                feedback_map[f.answer_message_id] = {"rating": f.rating, "reason": f.reason}
+
         # Separate user messages and assistant messages
         result = []
         # Map from original_assistant_id -> list of version Message objects (in order)
@@ -118,19 +121,14 @@ def get_messages_for_chat(chat_id: Optional[int], user_id: int):
                     "created_at": m.created_at.isoformat() if m.created_at else None,
                 })
             elif m.role == "assistant":
-                # Original message: parent_message_id is None → it IS the root
                 if m.parent_message_id is None:
                     version_groups[m.id] = [m]
                 else:
-                    # It's a regeneration — append to its root's group
                     root_id = m.parent_message_id
                     if root_id not in version_groups:
                         version_groups[root_id] = []
                     version_groups[root_id].append(m)
 
-        # Now attach version groups to user messages in conversation order.
-        # We pair each assistant version-group with the user message that preceded it.
-        # The root id for each group appears in all_messages in order, so we walk again.
         seen_roots = set()
         final_result = []
         for m in all_messages:
@@ -143,13 +141,20 @@ def get_messages_for_chat(chat_id: Optional[int], user_id: int):
                     "created_at": m.created_at.isoformat() if m.created_at else None,
                 })
             elif m.role == "assistant" and m.parent_message_id is None:
-                # This is a root assistant message
                 if m.id in seen_roots:
                     continue
                 seen_roots.add(m.id)
                 versions = version_groups.get(m.id, [m])
                 active_idx = len(versions) - 1
                 active = versions[active_idx]
+
+                # Check if any version of this message has feedback
+                existing_feedback = None
+                for v in versions:
+                    if v.id in feedback_map:
+                        existing_feedback = feedback_map[v.id]
+                        break
+
                 final_result.append({
                     "id": active.id,
                     "chat_id": active.chat_id,
@@ -161,13 +166,13 @@ def get_messages_for_chat(chat_id: Optional[int], user_id: int):
                         for v in versions
                     ],
                     "active_version_index": active_idx,
+                    "feedback": existing_feedback,
+                    "query_message_id": final_result[-1]["id"] if final_result and final_result[-1]["role"] == "user" else None,
                 })
-            # Skip non-root assistant messages (they appear inside versions[])
 
         return final_result
     finally:
         db.close()
-
 
 def get_query_message_id_for_assistant(assistant_message_id: int) -> Optional[int]:
     """
